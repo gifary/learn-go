@@ -16,6 +16,9 @@ import (
 	_userRepo "learngo/user/repository"
 	_userUsecase "learngo/user/usecase"
 	_UserHttpDeliver "learngo/user/delivery/http"
+	_courseRepo "learngo/course/repository"
+	_courseUsecase "learngo/course/usecase"
+	_courseHttpDelver "learngo/course/delivery/http"
 	"strconv"
 	"time"
 )
@@ -46,7 +49,7 @@ func main() {
 		}
 	}()
 
-	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.User{},&models.Course{})
 
 	port := os.Getenv("PORT")
 	r := gin.New()
@@ -88,6 +91,11 @@ func main() {
 	//usersRoute := r.Group("users")
 
 	_UserHttpDeliver.NewUserHandler(r,userUsecase)
+
+	courseRepo:= _courseRepo.NewMysqlCourseRepository(db)
+	courseUsecase:= _courseUsecase.NewCourseUsecase(courseRepo)
+
+	_courseHttpDelver.NewCourseHandler(r,courseUsecase)
 
 	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatal(err)

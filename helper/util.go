@@ -1,9 +1,11 @@
 package helper
 
 import (
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"learngo/models"
 	"net/http"
+	"os"
 )
 
 func HashPassword(password string) string {
@@ -31,4 +33,11 @@ func GetStatusCode(err error) int {
 	default:
 		return http.StatusInternalServerError
 	}
+}
+
+func GetCurrentUserId(c* gin.Context) uint  {
+	// claims := jwt.ExtractClaims(c)
+	user,_ := c.Get(os.Getenv("IDENTIFIED_KEY"))
+
+	return user.(*models.User).ID
 }

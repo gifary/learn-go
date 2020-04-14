@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 )
-var identityKey="id"
+
 var user models.User
 // GoMiddleware represent the data-struct for middleware
 type GoMiddleware struct {
@@ -29,19 +29,24 @@ func (m *GoMiddleware)JWT() (*jwt.GinJWTMiddleware, error) {
 		Key:         []byte(secretKey),
 		Timeout:     time.Hour,
 		MaxRefresh:  time.Hour,
-		IdentityKey: identityKey,
+		IdentityKey: os.Getenv("IDENTIFIED_KEY"),
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			if v, ok := data.(*models.User); ok {
 				return jwt.MapClaims{
-					identityKey: v.Username,
+					os.Getenv("IDENTIFIED_KEY"): v.ID,
+					"username": v.Username,
+					"email": v.Email,
 				}
 			}
 			return jwt.MapClaims{}
 		},
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
+			userId := claims[os.Getenv("IDENTIFIED_KEY")].(float64)
 			return &models.User{
-				Username: claims[identityKey].(string),
+				ID: uint(userId),
+				Username:claims["username"].(string),
+				Email:claims["email"].(string),
 			}
 		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
@@ -49,25 +54,27 @@ func (m *GoMiddleware)JWT() (*jwt.GinJWTMiddleware, error) {
 			if err := c.ShouldBind(&loginVals); err != nil {
 				return "", jwt.ErrMissingLoginValues
 			}
-			userID := loginVals.Username
+			userName := loginVals.Username
 			password := loginVals.Password
 
 			//query to database
 
-			var errFindUser = m.Conn.Where("username=?",userID).First(&user).Error
+			var errFindUser = m.Conn.Where("username=?",userName).First(&user).Error
 			matchPassword := Helper.CheckPasswordHash(password,user.Password)
 			if errFindUser!=nil || !matchPassword {
 				return nil, jwt.ErrFailedAuthentication
 			}else{
 				return &models.User{
+					ID:user.ID,
 					Username:  user.Username,
 					LastName:  user.LastName,
 					FirstName: user.FirstName,
+					Email: user.Email,
 				}, nil
 			}
 		},
 		Authorizator: func(data interface{}, c *gin.Context) bool {
-			if v, ok := data.(*models.User); ok && v.Username == user.Username {
+			if v, ok := data.(*models.User); ok && v.ID == user.ID {
 				return true
 			}
 
