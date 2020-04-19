@@ -8,17 +8,20 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	"github.com/joho/godotenv"
+	_cityHttpDeliver "learngo/city/delivery/http"
+	_cityRepo "learngo/city/repository"
+	_cityUsecase "learngo/city/usecase"
 	"learngo/middleware"
 	"learngo/models"
+	_stateHttpDeliver "learngo/state/delivery/http"
+	_stateRepo "learngo/state/repository"
+	_stateUsecase "learngo/state/usecase"
+	_UserHttpDeliver "learngo/user/delivery/http"
+	_userRepo "learngo/user/repository"
+	_userUsecase "learngo/user/usecase"
 	"log"
 	"net/http"
 	"os"
-	_userRepo "learngo/user/repository"
-	_userUsecase "learngo/user/usecase"
-	_UserHttpDeliver "learngo/user/delivery/http"
-	_courseRepo "learngo/course/repository"
-	_courseUsecase "learngo/course/usecase"
-	_courseHttpDelver "learngo/course/delivery/http"
 	"strconv"
 	"time"
 )
@@ -49,7 +52,14 @@ func main() {
 		}
 	}()
 
-	db.AutoMigrate(&models.User{},&models.Course{})
+	db.AutoMigrate(
+		&models.Role{},
+		&models.User{},
+		&models.State{},
+		&models.City{},
+		&models.Midwife{},
+		&models.Customer{},
+	)
 
 	port := os.Getenv("PORT")
 	r := gin.New()
@@ -80,22 +90,25 @@ func main() {
 
 	r.Use(authMiddleware.MiddlewareFunc())
 
-	userRepo:= _userRepo.NewMysqlUserRepository(db)
 
 	var timeOut, _ = strconv.Atoi(os.Getenv("TIMEOUT"))
 
 	timeoutContext := time.Duration(timeOut) * time.Second
 
+	// route user
+	userRepo:= _userRepo.NewMysqlUserRepository(db)
 	userUsecase:=_userUsecase.NewUserUsecase(userRepo,timeoutContext)
-
-	//usersRoute := r.Group("users")
-
 	_UserHttpDeliver.NewUserHandler(r,userUsecase)
 
-	courseRepo:= _courseRepo.NewMysqlCourseRepository(db)
-	courseUsecase:= _courseUsecase.NewCourseUsecase(courseRepo)
+	// route state
+	stateRepo:= _stateRepo.NewMysqlStateRepository(db)
+	stateUsecase:= _stateUsecase.NewStateUsecase(stateRepo)
+	_stateHttpDeliver.NewStateHandler(r,stateUsecase)
 
-	_courseHttpDelver.NewCourseHandler(r,courseUsecase)
+	// route city
+	cityRepo:= _cityRepo.NewMysqlStateRepository(db)
+	cityUsecase:= _cityUsecase.NewStateUsecase(cityRepo)
+	_cityHttpDeliver.NewStateHandler(r,cityUsecase)
 
 	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatal(err)

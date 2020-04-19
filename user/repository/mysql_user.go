@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	uuid "github.com/satori/go.uuid"
 	Helper "learngo/helper"
 	"learngo/models"
 	"learngo/user"
@@ -58,13 +59,13 @@ func (m mysqlUserRepository) Update(c *gin.Context, user *models.User) error {
 	var checkUser models.User
 	m.Conn.Where("email=?",user.Email).First(&checkUser)
 
-	if checkUser.ID!= u.ID && checkUser.ID!=0{
+	if checkUser.ID != u.ID{
 		return errors.New("email already exist")
 	}
 
 	m.Conn.Where("username=?",user.Username).First(&checkUser)
 
-	if checkUser.ID!= u.ID && checkUser.ID!=0{
+	if checkUser.ID != u.ID {
 		return errors.New("username already exist")
 	}
 
@@ -94,13 +95,13 @@ func (m mysqlUserRepository) Store(c *gin.Context, user *models.User) error {
 	var checkUser models.User
 	m.Conn.Where("email=?",user.Email).First(&checkUser)
 
-	if checkUser.ID!=0{
+	if checkUser.Email!=""{
 		return errors.New("email already exist")
 	}
 
 	m.Conn.Where("username=?",user.Username).First(&checkUser)
 
-	if checkUser.ID!=0{
+	if checkUser.Username!=""{
 		return errors.New("username already exist")
 	}
 
@@ -113,7 +114,7 @@ func (m mysqlUserRepository) Store(c *gin.Context, user *models.User) error {
 	return nil
 }
 
-func (m mysqlUserRepository) Delete(c *gin.Context, id int) error {
+func (m mysqlUserRepository) Delete(c *gin.Context, id uuid.UUID) error {
 	var u models.User
 	var errDb = m.Conn.Where("id=?",id).Delete(&u).Error
 	if errDb != nil {

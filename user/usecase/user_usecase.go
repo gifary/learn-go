@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"github.com/gin-gonic/gin"
+	uuid "github.com/satori/go.uuid"
 	"learngo/models"
 	"learngo/user"
 	"time"
@@ -43,7 +44,7 @@ func (u userUsecase) Store(c *gin.Context, user *models.User) error {
 	return u.userRepo.Store(c,user)
 }
 
-func (u userUsecase) Delete(c *gin.Context, id int) error {
+func (u userUsecase) Delete(c *gin.Context, id uuid.UUID) error {
 	return u.userRepo.Delete(c,id)
 }
 

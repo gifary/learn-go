@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
+	uuid "github.com/satori/go.uuid"
 	"learngo/helper"
 	"learngo/models"
 	"learngo/user"
@@ -107,14 +108,13 @@ func (u *UserHandler)Store(c* gin.Context)  {
 
 func(u *UserHandler) Update(c *gin.Context)  {
 	var user models.User
-	var id, _ = strconv.ParseUint(c.Params.ByName("id"),10,64)
 
 	if err := c.ShouldBind(&user); err!=nil{
 		c.JSON(helper.GetStatusCode(err),ResponseError{Message:err.Error()})
 		return
 	}
 
-	user.ID = uint(id)
+	user.ID = uuid.FromStringOrNil(c.Params.ByName("id"))
 
 	err := u.UserUsecase.Update(c,&user)
 

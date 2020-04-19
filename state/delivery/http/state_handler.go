@@ -2,9 +2,9 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
-	"learngo/course"
 	"learngo/helper"
 	"learngo/models"
+	"learngo/state"
 	"net/http"
 )
 
@@ -14,25 +14,26 @@ type ResponseError struct {
 
 type ResponseArraySuccess struct {
 	Message string `json:"message"`
-	Data []*models.Course `json:"data"`
+	Data []*models.State `json:"data"`
 }
 
 type ResponseObjectSuccess struct {
 	Message string `json:"message"`
-	Data *models.Course `json:"data"`
+	Data *models.State `json:"data"`
 }
 
-type CourseHandler struct {
-	CourseUsecase course.Usecase
+type stateHandler struct {
+	StateUsecase state.Usecase
 }
 
-func NewCourseHandler(r *gin.Engine, cu course.Usecase)  {
-	handler := &CourseHandler{CourseUsecase:cu}
-	r.GET("course-by-user",handler.GetByUser)
+func NewStateHandler(r *gin.Engine, s state.Usecase)  {
+	handler := &stateHandler{StateUsecase:s}
+
+	r.GET("/states",handler.FetchState)
 }
 
-func (ch *CourseHandler) GetByUser(c *gin.Context)  {
-	listArr,err := ch.CourseUsecase.GetByUser(c)
+func(u *stateHandler) FetchState(c *gin.Context)  {
+	listArr,err := u.StateUsecase.Fetch(c)
 
 	if err != nil {
 		c.JSON(helper.GetStatusCode(err),ResponseError{Message:err.Error()})

@@ -4,6 +4,7 @@ import (
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	uuid "github.com/satori/go.uuid"
 	Helper "learngo/helper"
 	"learngo/models"
 	"os"
@@ -42,9 +43,9 @@ func (m *GoMiddleware)JWT() (*jwt.GinJWTMiddleware, error) {
 		},
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
-			userId := claims[os.Getenv("IDENTIFIED_KEY")].(float64)
+			userId := claims[os.Getenv("IDENTIFIED_KEY")].(uuid.UUID)
 			return &models.User{
-				ID: uint(userId),
+				Base:models.Base{ID:userId},
 				Username:claims["username"].(string),
 				Email:claims["email"].(string),
 			}
@@ -65,7 +66,7 @@ func (m *GoMiddleware)JWT() (*jwt.GinJWTMiddleware, error) {
 				return nil, jwt.ErrFailedAuthentication
 			}else{
 				return &models.User{
-					ID:user.ID,
+					Base:models.Base{ID:user.Base.ID},
 					Username:  user.Username,
 					LastName:  user.LastName,
 					FirstName: user.FirstName,

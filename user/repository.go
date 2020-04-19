@@ -2,6 +2,7 @@ package user
 
 import (
 	"github.com/gin-gonic/gin"
+	uuid "github.com/satori/go.uuid"
 	"learngo/models"
 )
 
@@ -12,5 +13,5 @@ type Repository interface {
 	GetByEmail(c *gin.Context,email string)(user *models.User,err error)
 	Update(c *gin.Context,user *models.User) error
 	Store(c *gin.Context, user *models.User) error
-	Delete(c *gin.Context,id int) error
+	Delete(c *gin.Context,id uuid.UUID) error
 }
