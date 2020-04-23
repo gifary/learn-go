@@ -41,6 +41,7 @@ type Role struct {
 	Base
 	Name string `json:"title" binding:"required" gorm:"type:varchar(128)"`
 }
+
 type Gender string
 
 type Customer struct {
@@ -81,4 +82,27 @@ type City struct {
 	BaseWithoutUuid
 	Name string `json:"name"`
 	StateId uint `json:"state_id" gorm:"type:int;not null;"`
+}
+
+type Status string
+
+type ServiceCategory struct {
+	Base
+	Name string `json:"name" binding:"required" gorm:"type:varchar(128);not null;"`
+	Icon string `json:"icon" gorm:"type:varchar(64);"`
+	Banner string `json:"banner" gorm:"type:varchar(64);"`
+}
+
+type Service struct {
+	Base
+	Name string `json:"name" binding:"required" gorm:"type:varchar(128);not null;"`
+	Slug string `json:"slug" gorm:"type:varchar(256);not null;"`
+	Description string `json:"description" binding:"required" gorm:"type:text;"`
+	Icon string `json:"icon" gorm:"type:varchar(64);"`
+	Banner string `json:"banner" gorm:"type:varchar(64);"`
+	Duration uint `json:"banner" binding:"required" gorm:"type:int;"`
+	Note string `json:"note" gorm:"type:text;"`
+	Price uint `json:"price" binding:"required" gorm:"type:int;"`
+	Status Status `json:"status" gorm:"type:ENUM('active','inactive'); default:'active'"`
+	ServiceCategoryId uuid.UUID `json:"service_category_id" gorm:"type:char(36);not null;foreignkey:id;association_foreignkey:service_category_id"`
 }
